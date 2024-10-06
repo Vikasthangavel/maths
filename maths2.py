@@ -1,0 +1,84 @@
+def read_matrix():
+    rows = int(input("Enter the number of rows: "))
+    cols = int(input("Enter the number of columns: "))
+    matrix = []
+    for i in range(rows):
+        print(f"Enter values for row {i + 1} (space-separated):")
+        row = list(map(int, input().split()))
+        while len(row) != cols:
+            print(f"Please enter exactly {cols} values for this row:")
+            row = list(map(int, input().split()))
+        matrix.append(row)
+    return matrix, rows, cols
+
+def matrix_sum(matrix, rows, cols):
+    total = 0
+    for i in range(rows):
+        for j in range(cols):
+            total += matrix[i][j]
+    return total
+
+def calculate_matrix(matrix, rows, cols):
+    n = matrix_sum(matrix, rows, cols)
+    print(f"Sum of all elements: {n}")
+    transformed_matrix = [[0 for _ in range(cols)] for _ in range(rows)]
+    for i in range(rows):
+        row_sum = sum(matrix[i])
+        for j in range(cols):
+            col_sum = sum([matrix[x][j] for x in range(rows)])
+            transformed_matrix[i][j] = (row_sum * col_sum) / n
+    print("Transformed matrix:")
+    for row in transformed_matrix:
+        print(row)
+    return matrix, transformed_matrix
+
+def flatten_matrix(matrix, rows, cols):
+    flat_list = []
+    for i in range(rows):
+        for j in range(cols):
+            flat_list.append(matrix[i][j])
+    return flat_list
+
+def chi_squared_test(original_matrix, expected_matrix, rows, cols, alpha):
+    olist = flatten_matrix(original_matrix, rows, cols)
+    elist = flatten_matrix(expected_matrix, rows, cols)
+    E = []
+    for i in range(len(olist)):
+        if elist[i] != 0:
+            thir = round(((olist[i] - elist[i]) ** 2) / elist[i], 4)
+        else:
+            thir = 0
+        E.append(thir)
+    chi_squared_value = round(sum(E), 4)
+    print(f"Chi-squared value: {chi_squared_value}")
+    df = (rows - 1) * (cols - 1)
+    print(f"Degrees of freedom: {df}")
+    if df in chi_squared_table and alpha in chi_squared_table[df]:
+        critical_value = chi_squared_table[df][alpha]
+    else:
+        print("Critical value not found for the given alpha and degrees of freedom.")
+        return
+    print(f"Critical value at alpha = {alpha}: {critical_value}")
+    if chi_squared_value > critical_value:
+        print("Reject the null hypothesis. ",chi_squared_value ,">", critical_value)
+    else:
+        print("Fail to reject the null hypothesis.")
+chi_squared_table = {
+    1: {0.1: 2.706, 0.05: 3.841, 0.01: 6.635},
+    2: {0.1: 4.605, 0.05: 5.991, 0.01: 9.210},
+    3: {0.1: 6.251, 0.05: 7.815, 0.01: 11.345},
+    4: {0.1: 7.779, 0.05: 9.488, 0.01: 13.277},
+    5: {0.1: 9.236, 0.05: 11.070, 0.01: 15.086},
+    6: {0.1: 10.645, 0.05: 12.592, 0.01: 16.812},
+    7: {0.1: 12.017, 0.05: 14.067, 0.01: 18.475},
+    8: {0.1: 13.362, 0.05: 15.507, 0.01: 20.090},
+    9: {0.1: 14.684, 0.05: 16.919, 0.01: 21.666},
+    10: {0.1: 15.987, 0.05: 18.307, 0.01: 23.209}
+}
+def main():
+    original_matrix, rows, cols = read_matrix()
+    original_matrix, transformed_matrix = calculate_matrix(original_matrix, rows, cols)
+    alpha = float(input("Enter the significance level (e.g., 0.1, 0.05, 0.01): "))
+    chi_squared_test(original_matrix, transformed_matrix, rows, cols, alpha)
+
+main()
